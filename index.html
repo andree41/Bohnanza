@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bohnanza 🫘</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="console.warn('Supabase CDN failed to load')"></script>
+<style>
+:root{--bg:#0e1117;--sf:#161b27;--sf2:#1e2535;--ac:#f4a942;--ac2:#e8523a;--gn:#3ecf8e;--bl:#5b8dee;--pu:#b06ef3;--tx:#eef0f5;--mu:#6b7a99;--bd:rgba(255,255,255,.07);--r:16px;--sh:0 12px 40px rgba(0,0,0,.5)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(244,169,66,.05) 0,transparent 70%),radial-gradient(ellipse 60% 80% at 90% 80%,rgba(91,141,238,.05) 0,transparent 70%);pointer-events:none;z-index:0}
+.screen{display:none;position:relative;z-index:1}.screen.active{display:block}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:24px;padding:36px;box-shadow:var(--sh)}
+
+/* ── SETUP BANNER ── */
+#setupBanner{background:linear-gradient(120deg,rgba(232,82,58,.15),rgba(244,169,66,.12));border:1px solid rgba(244,169,66,.35);border-radius:14px;padding:14px 18px;margin-bottom:16px;font-size:.8rem;line-height:1.6}
+#setupBanner strong{color:var(--ac);display:block;margin-bottom:6px;font-size:.9rem}
+#setupBanner code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:.78rem;color:#fcd34d}
+.setup-inputs{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.setup-inputs input{padding:8px 12px;border-radius:8px;border:1px solid rgba(244,169,66,.3);background:rgba(0,0,0,.3);color:var(--tx);font-size:.8rem;font-family:monospace;outline:none}
+.setup-inputs input:focus{border-color:var(--ac)}
+.setup-inputs button{padding:8px;border-radius:8px;border:none;background:var(--ac);color:#1a1000;font-weight:800;font-size:.82rem;cursor:pointer}
+
+/* ── LOBBY ── */
+.logo{font-family:'Fredoka One',cursive;font-size:3.4rem;text-align:center;line-height:1;background:linear-gradient(120deg,var(--ac),var(--ac2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.tagline{text-align:center;color:var(--mu);font-size:.82rem;margin-bottom:22px}
+.fld{margin-bottom:11px}
+label{display:block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:5px}
+input,select{width:100%;padding:10px 13px;background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:10px;color:var(--tx);font-family:'Nunito',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--ac);background:rgba(244,169,66,.05)}
+select option{background:var(--sf)}
+.btn{width:100%;padding:11px;border-radius:12px;border:none;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;transition:all .2s}
+.btn-gold{background:linear-gradient(120deg,var(--ac),var(--ac2));color:#fff}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(244,169,66,.4)}
+.btn-bot{background:linear-gradient(120deg,var(--bl),var(--pu));color:#fff}
+.btn-bot:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(91,141,238,.4)}
+.btn-ghost{background:rgba(255,255,255,.07);color:var(--tx);margin-top:7px}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.btn-tut{background:rgba(62,207,142,.1);color:var(--gn);border:1px solid rgba(62,207,142,.3);font-family:'Nunito',sans-serif;font-weight:800;font-size:.84rem;padding:9px}
+.btn-tut:hover{background:rgba(62,207,142,.2)}
+.btn-rank{background:rgba(244,169,66,.1);color:var(--ac);border:1px solid rgba(244,169,66,.3);font-family:'Nunito',sans-serif;font-weight:800;font-size:.84rem;padding:9px;margin-top:0}
+.btn-rank:hover{background:rgba(244,169,66,.2)}
+.divider{text-align:center;color:var(--mu);font-size:.76rem;margin:13px 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;height:1px;width:40%;background:var(--bd)}
+.divider::before{left:0}.divider::after{right:0}
+.jr{display:flex;gap:7px}
+.jr input{flex:1;text-transform:uppercase;letter-spacing:2px;font-weight:800}
+.jr button{padding:10px 15px;border-radius:10px;border:none;background:var(--bl);color:#fff;font-family:'Fredoka One',cursive;cursor:pointer;transition:all .2s;white-space:nowrap}
+.jr button:hover{background:#4a7de0}
+.err{color:var(--ac2);font-size:.78rem;margin-top:4px;min-height:15px}
+.online-status{display:flex;align-items:center;gap:6px;font-size:.72rem;margin-bottom:10px;padding:6px 10px;border-radius:8px}
+.online-status.ok{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);color:var(--gn)}
+.online-status.bad{background:rgba(232,82,58,.08);border:1px solid rgba(232,82,58,.2);color:var(--ac2)}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot.ok{background:var(--gn)}.dot.bad{background:var(--ac2)}
+
+/* ── BOT PANEL ── */
+.bot-panel{background:rgba(91,141,238,.07);border:1px solid rgba(91,141,238,.2);border-radius:12px;padding:12px;margin-bottom:11px}
+.bot-panel-title{font-size:.74rem;font-weight:800;color:var(--bl);margin-bottom:9px}
+.bot-count-row{display:flex;align-items:center;gap:9px}
+.bot-count-row label{margin:0;font-size:.68rem;white-space:nowrap}
+.stepper{display:flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:7px;overflow:hidden}
+.stepper button{width:30px;height:30px;border:none;background:transparent;color:var(--tx);font-size:.95rem;cursor:pointer;font-weight:800}
+.stepper button:hover{background:rgba(255,255,255,.1)}
+.stepper span{min-width:24px;text-align:center;font-weight:800;color:var(--bl);font-size:.9rem}
+.diff-pills{display:flex;gap:5px;margin-top:7px}
+.dp2{flex:1;padding:5px 6px;border-radius:7px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--mu);font-size:.68rem;font-weight:800;cursor:pointer;text-align:center;transition:all .2s}
+.dp2.ae{border-color:var(--gn);background:rgba(62,207,142,.12);color:var(--gn)}
+.dp2.am{border-color:var(--ac);background:rgba(244,169,66,.12);color:var(--ac)}
+.dp2.ah{border-color:var(--ac2);background:rgba(232,82,58,.12);color:var(--ac2)}
+.bot-preview{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
+.bchip2{display:flex;align-items:center;gap:3px;background:rgba(176,110,243,.12);border:1px solid rgba(176,110,243,.25);border-radius:6px;padding:2px 7px;font-size:.66rem;color:var(--pu)}
+
+/* ── WAITING ── */
+#waiting{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.wait-card{max-width:480px;width:100%}
+.room-title{font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:10px}
+.share-strip{display:flex;align-items:center;gap:10px;background:rgba(244,169,66,.1);border:1px solid rgba(244,169,66,.25);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.share-strip:hover{background:rgba(244,169,66,.18)}
+.share-code{font-family:'Fredoka One',cursive;font-size:1.35rem;color:var(--ac);letter-spacing:3px}
+.share-hint{font-size:.7rem;color:var(--mu);margin-left:auto}
+.pslots{display:flex;flex-direction:column;gap:7px;margin-bottom:13px}
+.pslot{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:11px;border:1px solid var(--bd);background:rgba(255,255,255,.03);transition:all .3s}
+.pslot.filled{border-color:rgba(62,207,142,.35);background:rgba(62,207,142,.05)}
+.pslot.bot-slot{border-color:rgba(176,110,243,.3);background:rgba(176,110,243,.05)}
+.pslot.empty{opacity:.35}
+.pav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;background:rgba(255,255,255,.08);flex-shrink:0}
+.pnm{font-weight:800;font-size:.86rem}
+.ptg{font-size:.68rem;color:var(--mu)}
+.badge{margin-left:auto;font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:20px}
+.by{background:var(--ac2);color:#fff}.bh{background:var(--ac);color:#1a1000}.bb{background:var(--pu);color:#fff}
+.wst{text-align:center;color:var(--mu);font-size:.84rem;padding:6px 0}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── GAME ── */
+#game{min-height:100vh;display:flex;flex-direction:column;padding:9px;gap:7px}
+.gh{display:flex;align-items:center;gap:7px;background:var(--sf);border-radius:12px;padding:8px 12px;border:1px solid var(--bd);flex-wrap:wrap}
+.gt{font-family:'Fredoka One',cursive;font-size:1.15rem;color:var(--ac)}
+.tl{font-size:.76rem;color:var(--mu)}.tl strong{color:var(--tx)}
+.pp{padding:3px 9px;border-radius:20px;font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.pp-plant{background:rgba(62,207,142,.18);color:var(--gn);border:1px solid rgba(62,207,142,.3)}
+.pp-trade{background:rgba(91,141,238,.18);color:var(--bl);border:1px solid rgba(91,141,238,.3)}
+.pp-draw{background:rgba(176,110,243,.18);color:var(--pu);border:1px solid rgba(176,110,243,.3)}
+.bot-ind{display:flex;align-items:center;gap:5px;background:rgba(176,110,243,.12);border:1px solid rgba(176,110,243,.25);border-radius:8px;padding:3px 9px;font-size:.7rem;color:var(--pu);font-weight:700}
+.cc{display:flex;align-items:center;gap:4px;background:rgba(244,169,66,.12);border:1px solid rgba(244,169,66,.25);border-radius:8px;padding:3px 9px;margin-left:auto}
+.cc span{font-weight:800;color:var(--ac);font-size:.9rem}
+.ref-btn{padding:3px 9px;border-radius:7px;border:1px solid rgba(62,207,142,.3);background:rgba(62,207,142,.1);color:var(--gn);font-size:.68rem;font-weight:800;cursor:pointer;transition:all .2s}
+.ref-btn:hover{background:rgba(62,207,142,.2)}
+.gb{display:grid;grid-template-columns:190px 1fr 190px;gap:7px;flex:1}
+.gs{background:var(--sf);border-radius:var(--r);padding:10px;border:1px solid var(--bd);display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.gc{display:flex;flex-direction:column;gap:7px}
+.pl{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:2px}
+.bf{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:9px;padding:8px;cursor:pointer;transition:all .2s;position:relative;min-height:66px}
+.bf:hover{border-color:rgba(244,169,66,.4);background:rgba(244,169,66,.04)}
+.bfl{font-size:.6rem;color:var(--mu);font-weight:700;margin-bottom:4px}
+.bfb{display:flex;flex-wrap:wrap;gap:3px}
+.bc{width:23px;height:23px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.78rem;border:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.bfe{font-size:.65rem;color:rgba(255,255,255,.18);text-align:center;padding:5px 0}
+.bfv{position:absolute;bottom:4px;right:6px;font-size:.6rem;color:var(--ac);font-weight:800}
+.bfh{position:absolute;top:4px;right:4px;font-size:.56rem;padding:2px 5px;border-radius:4px;border:none;background:rgba(244,169,66,.2);color:var(--ac);cursor:pointer;font-weight:800;transition:all .2s}
+.bfh:hover{background:rgba(244,169,66,.38)}
+.dr{display:flex;gap:7px;justify-content:center}
+.dp{width:46px;height:63px;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.05rem;position:relative}
+.dp-d{background:linear-gradient(145deg,#1e3a6e,#122040);border:2px solid rgba(91,141,238,.4)}
+.dp-x{background:rgba(255,255,255,.04);border:2px dashed var(--bd)}
+.dpn{font-size:.52rem;color:var(--mu);margin-top:1px}
+.ls{max-height:85px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:2px}
+.ll{font-size:.64rem;color:var(--mu);padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.ll:first-child{color:var(--tx)}.ll.bot-line{color:var(--pu)}
+.ts{background:var(--sf);border-radius:var(--r);padding:10px;border:1px solid var(--bd);flex-shrink:0}
+.tss{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;min-height:44px}
+.tsl{flex:1;min-width:82px;background:rgba(255,255,255,.03);border:1px dashed var(--bd);border-radius:8px;padding:8px;text-align:center;transition:all .2s}
+.tsl.lit{border-color:var(--bl);background:rgba(91,141,238,.07)}
+.tst{font-size:.6rem;color:var(--mu);font-weight:800;margin-bottom:4px}
+.tsb{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+.tac{font-size:.6rem;padding:2px 6px;border-radius:5px;border:none;background:rgba(62,207,142,.2);color:var(--gn);cursor:pointer;font-weight:800;margin-top:4px;transition:all .2s}
+.tac:hover{background:rgba(62,207,142,.35)}
+.te{font-size:.7rem;color:var(--mu);padding:7px;text-align:center}
+.hs{background:var(--sf);border-radius:var(--r);padding:10px;border:1px solid var(--bd);flex:1}
+.hn{font-size:.62rem;color:var(--mu);margin-top:1px}
+.hc{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.hcard{width:50px;height:70px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;border:2px solid transparent;gap:2px;flex-shrink:0;user-select:none}
+.hcard:hover{transform:translateY(-5px)}
+.hcard.sel{transform:translateY(-10px);border-color:var(--ac2)!important;box-shadow:0 8px 18px rgba(232,82,58,.4)}
+.hcard.must{animation:pm 1.5s ease-in-out infinite}
+@keyframes pm{0%,100%{box-shadow:0 0 0 0 rgba(62,207,142,.5)}50%{box-shadow:0 0 0 7px rgba(62,207,142,0)}}
+.hcn{font-size:.43rem;font-weight:800;text-align:center;line-height:1.2;padding:0 2px}
+.ab{background:var(--sf);border-radius:var(--r);padding:8px 12px;border:1px solid var(--bd);display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.abtn{padding:6px 12px;border-radius:7px;border:none;font-family:'Nunito',sans-serif;font-weight:900;font-size:.72rem;cursor:pointer;transition:all .18s}
+.abtn:disabled{opacity:.3;cursor:not-allowed;transform:none!important}
+.abtn:hover:not(:disabled){transform:translateY(-1px)}
+.ag{background:rgba(62,207,142,.18);color:var(--gn);border:1px solid rgba(62,207,142,.3)}.ag:hover:not(:disabled){background:rgba(62,207,142,.3)}
+.ab2{background:rgba(91,141,238,.18);color:var(--bl);border:1px solid rgba(91,141,238,.3)}.ab2:hover:not(:disabled){background:rgba(91,141,238,.3)}
+.ap{background:rgba(176,110,243,.18);color:var(--pu);border:1px solid rgba(176,110,243,.3)}.ap:hover:not(:disabled){background:rgba(176,110,243,.3)}
+.ar{background:rgba(232,82,58,.18);color:var(--ac2);border:1px solid rgba(232,82,58,.3)}.ar:hover:not(:disabled){background:rgba(232,82,58,.3)}
+.ah{font-size:.7rem;color:var(--mu);margin-left:auto;font-style:italic}
+.op{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:9px;padding:8px;transition:all .2s;margin-bottom:6px}
+.op.active{border-color:rgba(244,169,66,.4);background:rgba(244,169,66,.04)}
+.op.bot-active{border-color:rgba(176,110,243,.4);background:rgba(176,110,243,.05)}
+.opr{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.opav{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;background:rgba(255,255,255,.07);flex-shrink:0}
+.opnm{font-weight:800;font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ophc{font-size:.65rem;color:var(--mu);margin-left:auto;flex-shrink:0}
+.opfs{display:flex;gap:3px;margin-top:3px}
+.opf{flex:1;height:26px;border-radius:5px;border:1px solid var(--bd);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;gap:1px;font-size:.75rem}
+.opf span{font-size:.45rem;color:var(--mu);font-weight:800}
+
+/* ── SCORE ── */
+#scoreboard{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.sc{max-width:460px;width:100%;text-align:center}
+.sh{font-family:'Fredoka One',cursive;font-size:2.5rem;background:linear-gradient(120deg,var(--ac),var(--ac2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ss{color:var(--mu);font-size:.8rem;margin-bottom:20px}
+.sr{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:11px;margin-bottom:7px;background:rgba(255,255,255,.04);border:1px solid var(--bd)}
+.srk{font-family:'Fredoka One',cursive;font-size:1.4rem;width:26px;text-align:center}
+.srn{font-weight:800;flex:1;text-align:left;font-size:.9rem}
+.src{font-family:'Fredoka One',cursive;font-size:1.15rem;color:var(--ac)}
+
+/* ── LEADERBOARD ── */
+#leaderboard{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.lb-card{max-width:500px;width:100%;text-align:center}
+.lb-title{font-family:'Fredoka One',cursive;font-size:2.2rem;color:var(--ac);margin-bottom:4px}
+.lb-sub{color:var(--mu);font-size:.8rem;margin-bottom:20px}
+.lb-tabs{display:flex;gap:6px;margin-bottom:14px;justify-content:center}
+.lb-tab{padding:5px 14px;border-radius:8px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--mu);font-size:.74rem;font-weight:800;cursor:pointer;transition:all .2s}
+.lb-tab.active{border-color:var(--ac);background:rgba(244,169,66,.12);color:var(--ac)}
+.lb-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:10px;margin-bottom:6px;background:rgba(255,255,255,.04);border:1px solid var(--bd);text-align:left}
+.lb-rank{font-family:'Fredoka One',cursive;font-size:1.1rem;width:26px;text-align:center}
+.lb-name{font-weight:800;flex:1;font-size:.86rem}
+.lb-stat{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--ac)}
+.lb-extra{font-size:.68rem;color:var(--mu);margin-left:auto}
+.lb-empty{color:var(--mu);font-size:.84rem;padding:20px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:7px 18px;font-weight:700;font-size:.84rem;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;box-shadow:var(--sh);white-space:nowrap}
+#toast.on{opacity:1}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:500;transition:opacity .4s}
+#loading.hide{opacity:0;pointer-events:none;display:none}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(4px)}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--sf);border:1px solid var(--bd);border-radius:20px;max-width:720px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--sh)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0}
+.modal-title{font-family:'Fredoka One',cursive;font-size:1.5rem;color:var(--ac)}
+.modal-close{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--tx);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:rgba(255,255,255,.16)}
+.modal-body{padding:16px 22px 22px}
+
+/* LANG TOGGLE */
+.lang-toggle{display:flex;align-items:center;gap:10px;margin-bottom:14px;justify-content:center}
+.lang-toggle label{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.82rem;color:var(--mu);font-weight:700;margin:0;text-transform:none;letter-spacing:0}
+.lang-toggle input[type=radio]{width:auto;padding:0;accent-color:var(--ac)}
+.lang-toggle input[type=radio]:checked+span{color:var(--ac)}
+
+/* TUTORIAL */
+.tut-tabs{display:flex;gap:5px;margin-bottom:15px;flex-wrap:wrap}
+.tut-tab{padding:5px 12px;border-radius:7px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--mu);font-size:.74rem;font-weight:800;cursor:pointer;transition:all .2s}
+.tut-tab.active{border-color:var(--ac);background:rgba(244,169,66,.12);color:var(--ac)}
+.tut-section{display:none}.tut-section.active{display:block}
+.tut-step{display:flex;gap:11px;margin-bottom:13px;align-items:flex-start}
+.tut-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(120deg,var(--ac),var(--ac2));color:#fff;font-weight:900;font-size:.78rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.tut-text{flex:1}
+.tut-text strong{color:var(--tx);display:block;margin-bottom:2px;font-size:.86rem}
+.tut-text p{color:var(--mu);font-size:.77rem;line-height:1.55}
+.tut-tip{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);border-radius:9px;padding:9px 13px;margin-bottom:11px;font-size:.77rem;color:var(--gn);line-height:1.5}
+.tut-warn{background:rgba(244,169,66,.08);border:1px solid rgba(244,169,66,.2);border-radius:9px;padding:9px 13px;margin-bottom:11px;font-size:.77rem;color:var(--ac);line-height:1.5}
+
+/* BOHNOMETER */
+.bohno-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:7px;margin-top:4px}
+.bohno-card{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:11px;padding:10px;transition:all .2s}
+.bohno-card:hover{border-color:rgba(244,169,66,.3)}
+.bohno-card-header{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.bohno-emoji{font-size:1.3rem}
+.bohno-name{font-weight:800;font-size:.82rem}
+.bohno-count{font-size:.65rem;color:var(--mu)}
+.bohno-rows{display:flex;flex-direction:column;gap:4px}
+.bohno-row{display:flex;align-items:center;gap:5px}
+.bohno-beans{display:flex;gap:2px;align-items:center}
+.bohno-bd{width:13px;height:13px;border-radius:3px;font-size:.5rem;display:flex;align-items:center;justify-content:center}
+.bohno-arrow{font-size:.62rem;color:var(--mu)}
+.bohno-coin{font-size:.74rem;font-weight:800;color:var(--ac)}
+.bohno-footer{font-size:.6rem;color:var(--mu);margin-top:5px;padding-top:4px;border-top:1px solid var(--bd)}
+
+@media(max-width:860px){.gb{grid-template-columns:1fr}.gs:first-child,.gs:last-child{display:none}}
+</style>
+</head>
+<body>
+
+<div id="loading"><div style="text-align:center"><div style="font-family:'Fredoka One',cursive;font-size:3.8rem;background:linear-gradient(120deg,#f4a942,#e8523a);-webkit-background-clip:text;-webkit-text-fill-color:transparent">🫘 Bohnanza</div><div style="color:#6b7a99;font-size:.82rem;margin-top:8px"><span class="spin"></span> Loading…</div></div></div>
+<div id="toast"></div>
+
+<!-- TUTORIAL MODAL -->
+<div class="modal-overlay hidden" id="tutModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="tutModalTitle">📖 How to Play</div><button class="modal-close" onclick="closeTutorial()">✕</button></div>
+    <div class="modal-body">
+      <div class="lang-toggle">
+        <label><input type="radio" name="lang" value="en" checked onchange="setLang('en')"> <span>🇬🇧 English</span></label>
+        <label><input type="radio" name="lang" value="zh" onchange="setLang('zh')"> <span>🇨🇳 中文</span></label>
+      </div>
+      <div class="tut-tabs" id="tutTabs"></div>
+      <div id="tutContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOHNOMETER REF MODAL -->
+<div class="modal-overlay hidden" id="refModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header"><div class="modal-title">📊 Bohnometer</div><button class="modal-close" onclick="closeRef()">✕</button></div>
+    <div class="modal-body">
+      <div class="tut-tip" id="refTip">Hover cards in your hand to see their value. Here are all harvest rates:</div>
+      <div class="bohno-grid" id="refGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOBBY -->
+<div id="lobby" class="screen">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div class="card" style="max-width:460px;width:100%">
+      <div class="logo">🫘 Bohnanza</div>
+      <div class="tagline">The Bean Trading Card Game</div>
+
+      <div id="setupBanner">
+        <strong>⚙️ Setup Required — Supabase Credentials</strong>
+        Paste your Supabase URL and anon key to enable online multiplayer. Get them free at <code>supabase.com → Project Settings → API</code>.
+        <div class="setup-inputs">
+          <input id="sbUrl" placeholder="https://xxxxxxxxxxxx.supabase.co" type="url">
+          <input id="sbKey" placeholder="eyJhbGci... (anon public key)" type="text">
+          <button onclick="saveSupabaseCreds()">💾 Save &amp; Connect</button>
+        </div>
+        <div style="margin-top:8px;font-size:.72rem;color:var(--mu)">
+          Also run this SQL in your Supabase SQL Editor:<br>
+          <code>create table if not exists rooms (id text primary key, state jsonb, updated_at timestamptz default now());</code><br>
+          <code>create table if not exists scores (id bigint generated always as identity primary key, player_name text, coins int, won boolean, game_mode text, played_at timestamptz default now());</code><br>
+          <code>alter table rooms enable row level security;</code><br>
+          <code>create policy "public" on rooms for all using (true) with check (true);</code><br>
+          <code>alter table scores enable row level security;</code><br>
+          <code>create policy "public" on scores for all using (true) with check (true);</code>
+        </div>
+      </div>
+
+      <div id="onlineStatus" class="online-status bad" style="display:none">
+        <div class="dot bad" id="statusDot"></div>
+        <span id="statusText">Not connected</span>
+      </div>
+
+      <div style="display:flex;gap:7px;margin-bottom:11px">
+        <button class="btn btn-tut" style="flex:1" onclick="openTutorial()">📖 Tutorial</button>
+        <button class="btn btn-rank" style="flex:1" onclick="showLeaderboard()">🏆 Leaderboard</button>
+      </div>
+
+      <div class="fld"><label id="lblName">Your Name</label><input id="playerName" placeholder="Enter your name…" maxlength="18"></div>
+
+      <div class="bot-panel">
+        <div class="bot-panel-title">🤖 Play vs Bots (instant start)</div>
+        <div class="bot-count-row">
+          <label style="margin:0;font-size:.68rem;white-space:nowrap">Bots:</label>
+          <div class="stepper"><button onclick="changeBots(-1)">−</button><span id="botCountDisplay">1</span><button onclick="changeBots(1)">+</button></div>
+        </div>
+        <div><label style="margin-top:7px;margin-bottom:4px;font-size:.68rem">Difficulty:</label>
+          <div class="diff-pills">
+            <div class="dp2 ae" id="diff-easy" onclick="setDiff('easy')">😴 Easy</div>
+            <div class="dp2" id="diff-medium" onclick="setDiff('medium')">🧠 Medium</div>
+            <div class="dp2" id="diff-hard" onclick="setDiff('hard')">🔥 Hard</div>
+          </div>
+        </div>
+        <div class="bot-preview" id="botPreview"></div>
+      </div>
+      <button class="btn btn-bot" onclick="startBotGame()">🤖 Play vs Bots</button>
+
+      <div class="divider">— online multiplayer —</div>
+      <div class="fld"><label>Max Players</label>
+        <select id="numPlayers"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option></select>
+      </div>
+      <button class="btn btn-gold" onclick="createRoom()" id="btnCreate">🌱 Create Online Room</button>
+      <div class="divider">or join</div>
+      <div class="fld">
+        <div class="jr">
+          <input id="joinCode" placeholder="ROOM CODE" maxlength="6" onkeydown="if(event.key==='Enter')joinRoom()">
+          <button onclick="joinRoom()">Join →</button>
+        </div>
+        <div class="err" id="lobbyErr"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WAITING -->
+<div id="waiting" class="screen">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div class="card wait-card">
+      <div class="room-title">🫘 Waiting Room</div>
+      <div class="share-strip" onclick="copyLink()">
+        <div><div class="share-code" id="wCode">——</div><div style="font-size:.64rem;color:var(--mu);margin-top:1px">Room Code — tap to copy link</div></div>
+        <div class="share-hint">📋</div>
+      </div>
+      <div class="pslots" id="wList"></div>
+      <div class="wst" id="wSt"><span class="spin"></span> Waiting…</div>
+      <button class="btn btn-gold" id="startBtn" style="display:none" onclick="startGame()">🚀 Start Game!</button>
+      <button class="btn btn-ghost" onclick="leaveRoom()">← Leave</button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game" class="screen">
+  <div class="gh">
+    <div class="gt">🫘 Bohnanza</div>
+    <div class="tl">Turn: <strong id="gTN">—</strong></div>
+    <span class="pp pp-plant" id="gPh">PLANT</span>
+    <div id="botInd" class="bot-ind" style="display:none"><span class="spin"></span> <span id="botIndName">Bot</span>…</div>
+    <button class="ref-btn" onclick="openRef()">📊 Bohnometer</button>
+    <div class="cc">🪙 <span id="gMC">0</span></div>
+  </div>
+  <div class="gb">
+    <div class="gs">
+      <div class="pl">🌾 My Fields</div>
+      <div id="f0" class="bf" onclick="harvestField(0)"><div class="bfl">Field 1</div><div class="bfb" id="f0b"></div><div class="bfe" id="f0e">Empty</div><div class="bfv" id="f0v"></div><button class="bfh" onclick="event.stopPropagation();harvestField(0)">Harvest</button></div>
+      <div id="f1" class="bf" onclick="harvestField(1)"><div class="bfl">Field 2</div><div class="bfb" id="f1b"></div><div class="bfe" id="f1e">Empty</div><div class="bfv" id="f1v"></div><button class="bfh" onclick="event.stopPropagation();harvestField(1)">Harvest</button></div>
+      <div id="f2" class="bf" style="display:none" onclick="harvestField(2)"><div class="bfl">Field 3</div><div class="bfb" id="f2b"></div><div class="bfe" id="f2e">Empty</div><div class="bfv" id="f2v"></div><button class="bfh" onclick="event.stopPropagation();harvestField(2)">Harvest</button></div>
+      <div class="pl" style="margin-top:1px">📚 Deck</div>
+      <div class="dr"><div class="dp dp-d">🃏<div class="dpn" id="dkN">0</div></div><div class="dp dp-x">♻️<div class="dpn" id="dcN">0</div></div></div>
+      <div class="pl" style="margin-top:1px">📋 Log</div>
+      <div class="ls" id="gLog"></div>
+    </div>
+    <div class="gc">
+      <div class="ts"><div class="pl">💱 Trade Area</div><div class="tss" id="trSlots"><div class="te">No cards yet.</div></div></div>
+      <div class="hs"><div style="display:flex;align-items:baseline;gap:7px"><div class="pl" style="margin-bottom:0">🤚 Hand</div><div class="hn">(leftmost must plant first)</div></div><div class="hc" id="myHand"></div></div>
+      <div class="ab" id="actBar"><span class="ah">Loading…</span></div>
+    </div>
+    <div class="gs"><div class="pl">👥 Others</div><div id="otherP"></div></div>
+  </div>
+</div>
+
+<!-- SCOREBOARD -->
+<div id="scoreboard" class="screen">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div class="card sc">
+      <div class="sh">🏆 Game Over!</div>
+      <div class="ss">Final Scores</div>
+      <div id="sRows"></div>
+      <button class="btn btn-gold" style="margin-top:18px" onclick="playAgain()">🔄 Play Again</button>
+      <button class="btn btn-ghost" onclick="backToLobby()">🏠 Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="leaderboard" class="screen">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div class="card lb-card">
+      <div class="lb-title">🏆 Leaderboard</div>
+      <div class="lb-sub">All-time scores</div>
+      <div class="lb-tabs">
+        <div class="lb-tab active" onclick="lbTab('coins')">🪙 Most Coins</div>
+        <div class="lb-tab" onclick="lbTab('wins')">🥇 Most Wins</div>
+        <div class="lb-tab" onclick="lbTab('games')">🎮 Games Played</div>
+      </div>
+      <div id="lbRows"><div class="lb-empty">Loading…</div></div>
+      <button class="btn btn-ghost" style="margin-top:16px" onclick="backToLobby()">← Back</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// BEAN DATA
+// ═══════════════════════════════════════════
+const BEANS=[
+  {id:'coffee',name:'Coffee',zh:'咖啡豆',emoji:'☕',color:'#8B5E3C',bg:'#2a1a0e',count:24,bohno:[0,0,0,0,1,1,2,2,3,3,4]},
+  {id:'wax',   name:'Wax',   zh:'蜡豆',  emoji:'🌕',color:'#f5d56e',bg:'#2d2500',count:22,bohno:[0,0,0,1,1,2,2,3,3,4]},
+  {id:'blue',  name:'Blue',  zh:'蓝豆',  emoji:'🫐',color:'#7eb8f7',bg:'#0a1f40',count:20,bohno:[0,0,0,1,1,2,3,4]},
+  {id:'chili', name:'Chili', zh:'辣椒豆',emoji:'🌶️',color:'#ef5555',bg:'#2d0505',count:18,bohno:[0,0,1,1,2,3,4]},
+  {id:'stink', name:'Stink', zh:'臭豆',  emoji:'💚',color:'#4ade80',bg:'#052d12',count:16,bohno:[0,0,1,2,3,4]},
+  {id:'green', name:'Green', zh:'绿豆',  emoji:'🫛',color:'#86efac',bg:'#052d12',count:14,bohno:[0,0,1,2,3]},
+  {id:'soy',   name:'Soy',   zh:'大豆',  emoji:'🟤',color:'#d4a76a',bg:'#2d1800',count:12,bohno:[0,0,1,2,3]},
+  {id:'black', name:'Black', zh:'黑豆',  emoji:'🖤',color:'#9ca3af',bg:'#151515',count:10,bohno:[0,1,2,3]},
+  {id:'red',   name:'Red',   zh:'红豆',  emoji:'❤️',color:'#f87171',bg:'#2d0510',count:8, bohno:[0,1,2,3]},
+  {id:'garden',name:'Garden',zh:'花园豆',emoji:'🌱',color:'#bef264',bg:'#152d00',count:6, bohno:[0,1,2]},
+  {id:'cocoa', name:'Cocoa', zh:'可可豆',emoji:'🍫',color:'#c08040',bg:'#2d1000',count:4, bohno:[0,1]},
+];
+const BM=Object.fromEntries(BEANS.map(b=>[b.id,b]));
+function bv(id,n){const t=(BM[id]?.bohno)||[];for(let c=Math.min(n,t.length-1);c>=0;c--)if(t[c]>0)return{coins:t[c]};return{coins:0}}
+
+const BOT_NAMES=['Roberta 🤖','Beano 🫘','HAL-9Bean 🟢','Leguminator 💪','BotTato 🥔','Planty 🌱'];
+const BOT_AV=['🤖','🫘','🟢','💪','🥔','🌱'];
+const AV=['🧑','👩','👨','🧒','👧','🧓','🧔'];
+
+// ═══════════════════════════════════════════
+// SUPABASE SETUP
+// ═══════════════════════════════════════════
+let sbClient=null;
+let sbConnected=false;
+
+function saveSupabaseCreds(){
+  const url=document.getElementById('sbUrl').value.trim();
+  const key=document.getElementById('sbKey').value.trim();
+  if(!url||!key){toast('Enter both URL and key!');return}
+  localStorage.setItem('bz_sb_url',url);
+  localStorage.setItem('bz_sb_key',key);
+  initSupabase(url,key);
+}
+
+async function initSupabase(url,key){
+  try{
+    sbClient=window.supabase.createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+    const{error}=await sbClient.from('rooms').select('id').limit(1);
+    if(error){
+      const missing=error.code==='42P01'||String(error.message).includes('does not exist')||String(error.message).includes('relation');
+      if(missing){
+        sbConnected=true;
+        showSqlInstructions();
+        return;
+      }
+      throw error;
+    }
+    sbConnected=true;
+    document.getElementById('setupBanner').style.display='none';
+    const st=document.getElementById('onlineStatus');
+    st.style.display='flex';st.className='online-status ok';
+    document.getElementById('statusDot').className='dot ok';
+    document.getElementById('statusText').textContent='Connected to Supabase ✓';
+    toast('Connected! Room codes work across any device.',3000);
+  }catch(e){
+    sbConnected=false;
+    document.getElementById('setupBanner').style.display='block';
+    const st=document.getElementById('onlineStatus');
+    st.style.display='flex';st.className='online-status bad';
+    document.getElementById('statusDot').className='dot bad';
+    document.getElementById('statusText').textContent='Failed: '+e.message;
+    console.error('Supabase:',e);
+    toast('Connection failed: '+e.message,5000);
+  }
+}
+
+function showSqlInstructions(){
+  const sql=[
+    'create table if not exists rooms (id text primary key, state jsonb, updated_at timestamptz default now());',
+    'create table if not exists scores (id bigint generated always as identity primary key, player_name text, coins int, won boolean, game_mode text, played_at timestamptz default now());',
+    'alter table rooms enable row level security;',
+    'alter table scores enable row level security;',
+    'do $$ begin',
+    '  if not exists (select 1 from pg_policies where tablename=\'rooms\' and policyname=\'pub\') then',
+    '    execute \'create policy "pub" on rooms for all to anon using (true) with check (true)\';',
+    '  end if;',
+    '  if not exists (select 1 from pg_policies where tablename=\'scores\' and policyname=\'pub\') then',
+    '    execute \'create policy "pub" on scores for all to anon using (true) with check (true)\';',
+    '  end if;',
+    'end $$;'
+  ].join('\n');
+  const banner=document.getElementById('setupBanner');
+  banner.style.display='block';
+  banner.innerHTML='<strong>Tables missing — run this in Supabase SQL Editor then refresh:</strong>'
+    +'<pre style="margin:8px 0;padding:8px;border-radius:6px;background:rgba(0,0,0,.5);font-size:.68rem;white-space:pre-wrap;color:#fcd34d">'+sql+'</pre>';
+  const st=document.getElementById('onlineStatus');
+  st.style.display='flex';st.className='online-status bad';
+  document.getElementById('statusDot').className='dot bad';
+  document.getElementById('statusText').textContent='Tables missing — see SQL above';
+}
+// Try loading saved creds on page load
+const DEFAULT_SB_URL='https://uspvpybtjvrhmuzbreyg.supabase.co';
+const DEFAULT_SB_KEY='sb_publishable_fCR-RpNqeAeNH2Q68KO0tA_erT5Pdi8';
+
+function tryLoadCreds(){
+  if(!window.supabase){
+    console.warn('Supabase not loaded yet, retrying...');
+    setTimeout(tryLoadCreds, 500);
+    return;
+  }
+  const url=localStorage.getItem('bz_sb_url')||DEFAULT_SB_URL;
+  const key=localStorage.getItem('bz_sb_key')||DEFAULT_SB_KEY;
+  document.getElementById('sbUrl').value=url;
+  document.getElementById('sbKey').value=key;
+  initSupabase(url,key);
+}
+
+// ═══════════════════════════════════════════
+// ROOM STORAGE (Supabase)
+// ═══════════════════════════════════════════
+async function loadRoom(rid){
+  if(!sbClient)return null;
+  const{data,error}=await sbClient.from('rooms').select('state').eq('id',rid).single();
+  if(error||!data)return null;
+  return data.state;
+}
+
+async function saveRoom(s){
+  if(!sbClient)return;
+  await sbClient.from('rooms').upsert({id:roomId,state:s,updated_at:new Date().toISOString()});
+}
+
+// Realtime subscription
+let roomChannel=null;
+function subscribeRoom(rid){
+  if(!sbClient)return;
+  if(roomChannel)roomChannel.unsubscribe();
+  roomChannel=sbClient.channel('room-'+rid)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:`id=eq.${rid}`},payload=>{
+      const s=payload.new.state;
+      if(s)onState(s);
+    }).subscribe();
+}
+
+// ═══════════════════════════════════════════
+// SCORES (Supabase)
+// ═══════════════════════════════════════════
+async function saveScores(players,gameMode){
+  if(!sbClient)return;
+  const winner=players.reduce((a,b)=>b.coins>a.coins?b:a);
+  const rows=players.filter(p=>!p.isBot).map(p=>({
+    player_name:p.name,
+    coins:p.coins,
+    won:p.id===winner.id,
+    game_mode:gameMode,
+    played_at:new Date().toISOString()
+  }));
+  if(rows.length)await sbClient.from('scores').insert(rows);
+}
+
+async function loadLeaderboard(mode){
+  if(!sbClient)return[];
+  let q;
+  if(mode==='coins'){
+    const{data}=await sbClient.from('scores').select('player_name,coins').order('coins',{ascending:false}).limit(20);
+    return(data||[]).map(r=>({name:r.player_name,stat:r.coins,label:'🪙'}));
+  }else if(mode==='wins'){
+    // aggregate wins per player_name
+    const{data}=await sbClient.from('scores').select('player_name').eq('won',true);
+    const counts={};
+    (data||[]).forEach(r=>{counts[r.player_name]=(counts[r.player_name]||0)+1});
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([name,c])=>({name,stat:c,label:'🥇'}));
+  }else{
+    const{data}=await sbClient.from('scores').select('player_name');
+    const counts={};
+    (data||[]).forEach(r=>{counts[r.player_name]=(counts[r.player_name]||0)+1});
+    return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([name,c])=>({name,stat:c,label:'🎮'}));
+  }
+}
+
+// ═══════════════════════════════════════════
+// GLOBALS
+// ═══════════════════════════════════════════
+let myId=localStorage.getItem('bz_pid')||(()=>{const id='p'+Math.random().toString(36).slice(2,10);localStorage.setItem('bz_pid',id);return id})();
+let myName='',roomId='',pollTimer=null,selCard=-1;
+let botCount=1,botDiff='easy';
+let isBotGame=false,localState=null,botTimer=null;
+let currentLang='en',currentLbMode='coins';
+let lastBotSettings=null; // for Play Again
+
+// ═══════════════════════════════════════════
+// TUTORIAL — bilingual content
+// ═══════════════════════════════════════════
+const TUT={
+  en:{
+    tabs:['🌱 Basics','🔄 Your Turn','🌾 Harvesting','💱 Trading','📊 Bohnometer'],
+    keys:['basics','turn','harvest','trade','bohnometer'],
+    basics:`<div class="tut-tip">🎯 <strong>Goal:</strong> Earn the most coins by planting and harvesting bean fields!</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>The Deck & Hand</strong><p>154 bean cards, 11 types. You start with 5–6 cards. <em>Order matters</em> — you must always plant your leftmost card first. You can NEVER rearrange your hand.</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>Bean Fields</strong><p>Each player has 2 fields (3rd buyable for 3 coins). A field holds only ONE bean type. Stack the same type to earn more coins when you harvest.</p></div></div>
+<div class="tut-step"><div class="tut-num">3</div><div class="tut-text"><strong>Coins</strong><p>Earned by harvesting. Rarer beans (fewer in deck) earn coins faster. Check the Bohnometer tab for exact rates.</p></div></div>
+<div class="tut-warn">⚠️ You can NEVER rearrange cards in your hand. Play order is fixed!</div>`,
+    turn:`<div class="tut-tip">Each turn has 4 phases in order:</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>🌱 Plant First Card (Mandatory)</strong><p>MUST plant your leftmost card. If no field matches, harvest one first (even for 0 coins).</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>🌱 Plant Second Card (Optional)</strong><p>You MAY plant the new leftmost card. Skip if not beneficial.</p></div></div>
+<div class="tut-step"><div class="tut-num">3</div><div class="tut-text"><strong>💱 Draw & Trade (2 cards)</strong><p>Flip 2 cards into the trade area. Plant them yourself or trade with other players.</p></div></div>
+<div class="tut-step"><div class="tut-num">4</div><div class="tut-text"><strong>🃏 Draw 3 Cards</strong><p>Draw 3 from the deck to the END of your hand. Turn passes left.</p></div></div>`,
+    harvest:`<div class="tut-tip">🌾 Harvest anytime during your turn — even before planting!</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>When to Harvest</strong><p>When you need room for a new bean type, or when the field is valuable enough. Check the Bohnometer!</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>How to Harvest</strong><p>Click a field or press its Harvest button. You earn coins equal to the Bohnometer value. Excess beans go to the discard pile.</p></div></div>
+<div class="tut-warn">⚠️ Most beans earn 0 coins if you harvest just 1! Always try to stack before harvesting.</div>`,
+    trade:`<div class="tut-tip">💱 Trading happens after the active player draws 2 cards face-up.</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>Active Player</strong><p>Can plant drawn cards or trade them with others. You agree on what to swap.</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>Other Players Offer</strong><p>Select a card from your hand → click "Offer Card for Trade". Active player can Accept.</p></div></div>
+<div class="tut-step"><div class="tut-num">3</div><div class="tut-text"><strong>All Drawn Cards Must Be Planted</strong><p>Untraded drawn cards must be planted (harvest a field first if needed). They cannot be skipped.</p></div></div>`,
+    bohnometer:`<div class="tut-tip">📊 How many beans of each type you need to earn coins. Rarer = faster to score!</div><div class="bohno-grid" id="tutBohnoGrid"></div>`
+  },
+  zh:{
+    tabs:['🌱 基础规则','🔄 你的回合','🌾 收获','💱 交易','📊 豆表'],
+    keys:['basics','turn','harvest','trade','bohnometer'],
+    basics:`<div class="tut-tip">🎯 <strong>目标：</strong>通过种植和收获豆子来赚取最多的金币！</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>牌组与手牌</strong><p>共154张豆子牌，11种类型。每人起始5-6张。<em>顺序非常重要</em>——你必须先种植最左边的牌。手牌顺序不可更改！</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>豆田</strong><p>每位玩家有2块豆田（花3枚金币可购买第3块）。每块田只能种一种豆子，同类豆子叠加越多，收获时金币越多。</p></div></div>
+<div class="tut-step"><div class="tut-num">3</div><div class="tut-text"><strong>金币</strong><p>收获豆田时赚取金币。越稀有的豆子（牌堆中越少）越快获得金币。详见豆表。</p></div></div>
+<div class="tut-warn">⚠️ 手牌顺序固定，绝对不能重新排列！</div>`,
+    turn:`<div class="tut-tip">每个回合按顺序分4个阶段：</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>🌱 种植第一张牌（必须）</strong><p>必须种植手牌最左边的牌。如果没有匹配的田，先收获一块田（即使获得0金币）。</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>🌱 种植第二张牌（可选）</strong><p>可以选择种植新的最左边的牌，也可以跳过。</p></div></div>
+<div class="tut-step"><div class="tut-num">3</div><div class="tut-text"><strong>💱 翻牌并交易（2张）</strong><p>从牌堆翻出2张牌放入交易区。可以自己种植，也可以和其他玩家交易。</p></div></div>
+<div class="tut-step"><div class="tut-num">4</div><div class="tut-text"><strong>🃏 摸3张牌</strong><p>从牌堆摸3张牌加到手牌末尾，然后轮到下一位玩家。</p></div></div>`,
+    harvest:`<div class="tut-tip">🌾 在你的回合内随时可以收获——甚至在种植之前！</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>何时收获</strong><p>当你需要腾出地方种新豆子，或者田里的豆子已经够赚钱了，查看豆表决定时机！</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>如何收获</strong><p>点击豆田或按下"收获"按钮。你将获得对应豆表值的金币，多余的豆子进入弃牌堆。</p></div></div>
+<div class="tut-warn">⚠️ 大多数豆子只种1张收获会得0金币！尽量多种几张再收。</div>`,
+    trade:`<div class="tut-tip">💱 当前玩家翻出2张牌后，进入交易阶段。</div>
+<div class="tut-step"><div class="tut-num">1</div><div class="tut-text"><strong>当前玩家</strong><p>可以自己种植翻出的牌，或者与其他玩家交换。</p></div></div>
+<div class="tut-step"><div class="tut-num">2</div><div class="tut-text"><strong>其他玩家出价</strong><p>从手牌中选一张 → 点击"提议交易"。当前玩家可以接受。</p></div></div>
+<div class="tut-step"><div class="tut-num">3</div><div class="tut-text"><strong>翻出的牌必须全部种植</strong><p>未被交易的牌必须种植（必要时先收获），不能跳过。</p></div></div>`,
+    bohnometer:`<div class="tut-tip">📊 每种豆子需要多少张才能赚取金币。越稀有的豆子越快得分！</div><div class="bohno-grid" id="tutBohnoGrid"></div>`
+  }
+};
+
+function setLang(l){
+  currentLang=l;
+  renderTutorial();
+}
+function openTutorial(){document.getElementById('tutModal').classList.remove('hidden');renderTutorial()}
+function closeTutorial(){document.getElementById('tutModal').classList.add('hidden')}
+function openRef(){document.getElementById('refModal').classList.remove('hidden');buildBohnoCards('refGrid')}
+function closeRef(){document.getElementById('refModal').classList.add('hidden')}
+
+function renderTutorial(){
+  const t=TUT[currentLang];
+  document.getElementById('tutModalTitle').textContent=currentLang==='zh'?'📖 游戏教程':'📖 How to Play';
+  // tabs
+  document.getElementById('tutTabs').innerHTML=t.tabs.map((tab,i)=>
+    `<div class="tut-tab${i===0?' active':''}" onclick="tutTab(${i})">${tab}</div>`
+  ).join('');
+  // show first section
+  currentTutTab=0;
+  showTutSection(0);
+}
+let currentTutTab=0;
+function tutTab(i){
+  currentTutTab=i;
+  document.querySelectorAll('.tut-tab').forEach((el,j)=>el.classList.toggle('active',j===i));
+  showTutSection(i);
+}
+function showTutSection(i){
+  const t=TUT[currentLang];
+  document.getElementById('tutContent').innerHTML=`<div class="tut-section active">${t[t.keys[i]]||''}</div>`;
+  if(t.keys[i]==='bohnometer')buildBohnoCards('tutBohnoGrid');
+}
+
+function buildBohnoCards(containerId){
+  const el=document.getElementById(containerId);if(!el)return;
+  el.innerHTML='';
+  BEANS.forEach(b=>{
+    const t=b.bohno,rows=[];let prev=0;
+    for(let i=0;i<t.length;i++)if(t[i]>prev){rows.push({n:i,coins:t[i]});prev=t[i]}
+    const bname=currentLang==='zh'?(b.zh||b.name):b.name;
+    const div=document.createElement('div');div.className='bohno-card';
+    div.innerHTML=`<div class="bohno-card-header"><div class="bohno-emoji">${b.emoji}</div><div><div class="bohno-name">${bname}</div><div class="bohno-count">${currentLang==='zh'?`${b.count}张`:b.count+' cards'}</div></div></div>
+<div class="bohno-rows">${rows.map(r=>`<div class="bohno-row"><div class="bohno-beans">${Array.from({length:r.n},()=>`<div class="bohno-bd" style="background:${b.bg};border:1px solid ${b.color}60">${b.emoji}</div>`).join('')}</div><div class="bohno-arrow">→</div><div class="bohno-coin">🪙${r.coins}</div></div>`).join('')}</div>
+<div class="bohno-footer">Max ${t.length-1} = 🪙${t[t.length-1]}</div>`;
+    el.appendChild(div);
+  });
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeTutorial();closeRef()}});
+document.getElementById('tutModal').addEventListener('click',e=>{if(e.target.id==='tutModal')closeTutorial()});
+document.getElementById('refModal').addEventListener('click',e=>{if(e.target.id==='refModal')closeRef()});
+
+// ═══════════════════════════════════════════
+// LEADERBOARD
+// ═══════════════════════════════════════════
+async function showLeaderboard(){
+  showScreen('leaderboard');
+  await renderLbRows();
+}
+async function lbTab(mode){
+  currentLbMode=mode;
+  document.querySelectorAll('.lb-tab').forEach(el=>el.classList.remove('active'));
+  event.target.classList.add('active');
+  await renderLbRows();
+}
+async function renderLbRows(){
+  const el=document.getElementById('lbRows');
+  el.innerHTML='<div class="lb-empty"><span class="spin"></span> Loading…</div>';
+  if(!sbConnected){el.innerHTML='<div class="lb-empty">Connect Supabase to see leaderboard.</div>';return}
+  const rows=await loadLeaderboard(currentLbMode);
+  if(!rows.length){el.innerHTML='<div class="lb-empty">No scores yet. Play a game!</div>';return}
+  const em=['🥇','🥈','🥉'];
+  const cols=['#f5d56e','#c0c0c0','#cd7f32'];
+  el.innerHTML=rows.map((r,i)=>`<div class="lb-row">
+    <div class="lb-rank" style="color:${cols[i]||'#6b7a99'}">${em[i]||`${i+1}`}</div>
+    <div class="lb-name">${r.name}</div>
+    <div class="lb-stat">${r.label}${r.stat}</div>
+  </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// LOBBY
+// ═══════════════════════════════════════════
+function changeBots(d){botCount=Math.max(1,Math.min(6,botCount+d));document.getElementById('botCountDisplay').textContent=botCount;renderBotPreview()}
+function setDiff(d){botDiff=d;['easy','medium','hard'].forEach(x=>{document.getElementById('diff-'+x).className='dp2'+(d===x?' a'+x[0]:'')});document.getElementById('diff-'+d).className='dp2 a'+d[0]}
+function renderBotPreview(){document.getElementById('botPreview').innerHTML=Array.from({length:botCount},(_,i)=>`<div class="bchip2">${BOT_AV[i]} ${BOT_NAMES[i].split(' ')[0]}</div>`).join('')}
+renderBotPreview();
+
+window.addEventListener('load',()=>{
+  // Hide loading screen immediately, never block on it
+  document.getElementById('loading').classList.add('hide');
+  showScreen('lobby');
+  
+  // Pre-fill room code from URL
+  const p=new URLSearchParams(location.search);
+  const rid=p.get('room');
+  if(rid){document.getElementById('joinCode').value=rid.toUpperCase();toast('Room code filled — enter name & join! 👋',3500)}
+  
+  // Init Supabase in background — does not block page load
+  setTimeout(()=>tryLoadCreds(), 100);
+});
+
+function setErr(m){document.getElementById('lobbyErr').textContent=m}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:6},()=>c[Math.random()*c.length|0]).join('')}
+
+// ═══════════════════════════════════════════
+// BOT GAME
+// ═══════════════════════════════════════════
+function startBotGame(){
+  const name=document.getElementById('playerName').value.trim();
+  if(!name){setErr('Enter your name first!');return}
+  myName=name;isBotGame=true;roomId='local';
+  lastBotSettings={name,botCount,botDiff};
+  const me={id:myId,name,coins:0,hand:[],fields:[[],[],[]],thirdField:false,isBot:false};
+  const bots=Array.from({length:botCount},(_,i)=>({id:'bot_'+i,name:BOT_NAMES[i],coins:0,hand:[],fields:[[],[],[]],thirdField:false,isBot:true,difficulty:botDiff}));
+  const all=[me,...bots];
+  const deck=buildDeck();const hs=all.length<=3?6:5;
+  all.forEach(p=>{p.hand=deck.splice(0,hs)});
+  localState={phase:'playing',players:all,deck,discard:[],drawnCards:[],tradeOffers:[],currentTurn:0,turnPhase:'plant1',log:['Game started! Your turn first.'],isBotGame:true};
+  selCard=-1;
+  showScreen('game');renderGame(localState);maybeRunBot();
+}
+
+// ═══════════════════════════════════════════
+// ONLINE ROOM
+// ═══════════════════════════════════════════
+async function createRoom(){
+  if(!sbConnected){toast('❌ Connect Supabase first!',3000);return}
+  const name=document.getElementById('playerName').value.trim();
+  if(!name){setErr('Enter your name first!');return}
+  myName=name;isBotGame=false;roomId=genCode();
+  const s={phase:'waiting',maxPlayers:+document.getElementById('numPlayers').value,
+    players:[{id:myId,name,coins:0,hand:[],fields:[[],[],[]],thirdField:false}],
+    deck:[],discard:[],drawnCards:[],tradeOffers:[],currentTurn:0,turnPhase:'plant1',log:['Room created by '+name]};
+  await saveRoom(s);
+  subscribeRoom(roomId);
+  showScreen('waiting');renderWaiting(s);startPoll();
+}
+
+async function joinRoom(){
+  if(!sbConnected){toast('❌ Connect Supabase first!',3000);return}
+  const name=document.getElementById('playerName').value.trim();
+  if(!name){setErr('Enter your name first!');return}
+  const code=document.getElementById('joinCode').value.trim().toUpperCase();
+  if(code.length!==6){setErr('Enter a 6-character room code.');return}
+  setErr('🔍 Looking for room…');
+  const s=await loadRoom(code);
+  if(!s){setErr('❌ Room not found. Check the code.');return}
+  if(s.phase!=='waiting'){setErr('⚠️ Game already started!');return}
+  if(s.players.length>=s.maxPlayers&&!s.players.find(p=>p.id===myId)){setErr('Room is full!');return}
+  myName=name;isBotGame=false;roomId=code;
+  if(!s.players.find(p=>p.id===myId)){
+    s.players.push({id:myId,name,coins:0,hand:[],fields:[[],[],[]],thirdField:false});
+    s.log.push(name+' joined.');
+    await saveRoom(s);
+  }
+  setErr('');subscribeRoom(roomId);showScreen('waiting');renderWaiting(s);startPoll();
+}
+
+function renderWaiting(s){
+  document.getElementById('wCode').textContent=roomId;
+  const list=document.getElementById('wList');list.innerHTML='';
+  for(let i=0;i<s.maxPlayers;i++){
+    const p=s.players[i],d=document.createElement('div');
+    d.className='pslot '+(p?(p.isBot?'bot-slot':'filled'):'empty');
+    if(p)d.innerHTML=`<div class="pav">${p.isBot?BOT_AV[i-1]:AV[i]}</div><div><div class="pnm">${p.name}</div><div class="ptg">Player ${i+1}</div></div>${p.id===myId?'<span class="badge by">YOU</span>':(p.isBot?'<span class="badge bb">BOT</span>':(i===0?'<span class="badge bh">HOST</span>':''))}`;
+    else d.innerHTML=`<div class="pav" style="opacity:.3">⋯</div><div><div class="pnm" style="color:var(--mu)">Waiting…</div><div class="ptg">Slot ${i+1}</div></div>`;
+    list.appendChild(d);
+  }
+  const isHost=s.players[0]?.id===myId;
+  const sb=document.getElementById('startBtn'),st=document.getElementById('wSt');
+  if(isHost&&s.players.length>=2){sb.style.display='block';st.innerHTML=`✅ ${s.players.length}/${s.maxPlayers} ready!`}
+  else{sb.style.display='none';st.innerHTML=`<span class="spin"></span> ${s.players.length}/${s.maxPlayers} joined…`}
+}
+
+function copyLink(){
+  const url=`${location.origin}${location.pathname}?room=${roomId}`;
+  navigator.clipboard.writeText(url).then(()=>toast('🔗 Link copied!',2500)).catch(()=>toast(`Code: ${roomId}`,3000));
+}
+function leaveRoom(){stopPoll();if(roomChannel){roomChannel.unsubscribe();roomChannel=null}roomId='';showScreen('lobby')}
+
+// ═══════════════════════════════════════════
+// DECK
+// ═══════════════════════════════════════════
+function buildDeck(){let d=[];BEANS.forEach(b=>{for(let i=0;i<b.count;i++)d.push(b.id)});for(let i=d.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[d[i],d[j]]=[d[j],d[i]]}return d}
+
+async function startGame(){
+  const s=await loadRoom(roomId);if(!s)return;
+  const deck=buildDeck(),hs=s.players.length<=3?6:5;
+  s.players.forEach(p=>{p.hand=deck.splice(0,hs);p.fields=[[],[],[]];p.thirdField=false;p.coins=0});
+  s.deck=deck;s.discard=[];s.drawnCards=[];s.tradeOffers=[];s.currentTurn=0;s.turnPhase='plant1';s.phase='playing';
+  s.log=['Game started! '+s.players[0].name+' goes first.'];
+  await saveRoom(s);
+}
+
+// ═══════════════════════════════════════════
+// POLLING (fallback + realtime)
+// ═══════════════════════════════════════════
+let lastH='';
+function startPoll(){
+  stopPoll();
+  pollTimer=setInterval(async()=>{
+    if(isBotGame)return;
+    const s=await loadRoom(roomId);if(!s)return;
+    const h=s.phase+(s.currentTurn||0)+(s.turnPhase||'')+(s.players.length)+(s.log?.length||0)+(s.drawnCards?.length||0)+(s.tradeOffers?.length||0);
+    if(h!==lastH){lastH=h;onState(s)}
+  },1500);
+}
+function stopPoll(){if(pollTimer){clearInterval(pollTimer);pollTimer=null}}
+function onState(s){
+  if(s.phase==='waiting'&&document.getElementById('waiting').classList.contains('active'))renderWaiting(s);
+  else if(s.phase==='playing'){showScreen('game');renderGame(s)}
+  else if(s.phase==='ended'){handleGameEnd(s)}
+}
+
+// ═══════════════════════════════════════════
+// BOT AI
+// ═══════════════════════════════════════════
+function maybeRunBot(){
+  if(botTimer)clearTimeout(botTimer);
+  const s=localState;if(!s||s.phase!=='playing')return;
+  const cur=s.players[s.currentTurn];
+  if(!cur?.isBot)return;
+  const delay={easy:1300,medium:850,hard:450}[cur.difficulty||'easy'];
+  document.getElementById('botInd').style.display='flex';
+  document.getElementById('botIndName').textContent=cur.name;
+  botTimer=setTimeout(()=>runBotTurn(s),delay);
+}
+function runBotTurn(s){
+  const bi=s.currentTurn,bot=s.players[bi],diff=bot.difficulty||'easy',tp=s.turnPhase;
+  if(tp==='plant1')botPlant(s,bi,0);
+  else if(tp==='plant2_optional'){if(botShouldPlant2(s,bi,diff))botPlant(s,bi,0);else botAdvTrade(s,bi)}
+  else if(tp==='trade'){if(diff!=='easy'&&s.drawnCards?.length>0)botHandleTrade(s,bi);else botDoneTrade(s,bi)}
+  else if(tp==='draw')botDraw(s,bi);
+}
+function botShouldPlant2(s,bi,diff){
+  const bot=s.players[bi];if(!bot.hand.length)return false;
+  const id=bot.hand[0];
+  for(let f=0;f<(bot.thirdField?3:2);f++)if(!bot.fields[f].length||bot.fields[f][0]===id)return true;
+  if(diff==='hard'&&bv(id,1).coins>0)return true;
+  return false;
+}
+function botFindField(bot,id){for(let f=0;f<(bot.thirdField?3:2);f++)if(!bot.fields[f].length||bot.fields[f][0]===id)return f;return-1}
+function botHarvestWorst(s,bot){
+  const fc=bot.thirdField?3:2;let hi=0,worst=999;
+  for(let f=0;f<fc;f++){if(!bot.fields[f].length){hi=f;worst=-1;break}const{coins}=bv(bot.fields[f][0],bot.fields[f].length);if(coins<worst){worst=coins;hi=f}}
+  const fld=bot.fields[hi];
+  if(fld.length){const hid=fld[0];const{coins}=bv(hid,fld.length);bot.coins+=coins;s.discard.push(...fld.slice(coins));bot.fields[hi]=[];s.log.push(`🤖 ${bot.name} harvested ${BM[hid]?.name} for 🪙${coins}.`)}
+  return hi;
+}
+function botPlant(s,bi,ci){
+  const bot=s.players[bi];if(ci>=bot.hand.length){botAdvTrade(s,bi);return}
+  const id=bot.hand[ci];let f=botFindField(bot,id);if(f<0)f=botHarvestWorst(s,bot);
+  bot.fields[f].push(id);bot.hand.splice(ci,1);s.log.push(`🤖 ${bot.name} planted ${BM[id]?.name}.`);s.turnPhase='plant2_optional';saveBotStep(s);
+}
+function botAdvTrade(s,bi){
+  const bot=s.players[bi];s.drawnCards=s.deck.splice(0,2);s.tradeOffers=[];s.turnPhase='trade';
+  s.log.push(`🤖 ${bot.name} drew for trading.`);saveBotStep(s);
+}
+function botHandleTrade(s,bi){
+  const bot=s.players[bi];const keep=[];
+  (s.drawnCards||[]).forEach(id=>{const f=botFindField(bot,id);if(f>=0){bot.fields[f].push(id);keep.push(id);s.log.push(`🤖 ${bot.name} planted drawn ${BM[id]?.name}.`)}});
+  s.drawnCards=(s.drawnCards||[]).filter(id=>!keep.includes(id));botDoneTrade(s,bi);
+}
+function botDoneTrade(s,bi){
+  const bot=s.players[bi];
+  (s.drawnCards||[]).forEach(id=>{let f=botFindField(bot,id);if(f<0)f=botHarvestWorst(s,bot);bot.fields[f].push(id);s.log.push(`🤖 ${bot.name} planted ${BM[id]?.name}.`)});
+  s.drawnCards=[];s.tradeOffers=[];s.turnPhase='draw';saveBotStep(s);
+}
+function botDraw(s,bi){
+  const bot=s.players[bi];const drawn=s.deck.splice(0,3);bot.hand.push(...drawn);
+  s.log.push(`🤖 ${bot.name} drew ${drawn.length}.`);
+  s.currentTurn=(s.currentTurn+1)%s.players.length;s.turnPhase='plant1';s.drawnCards=[];s.tradeOffers=[];
+  if(!s.deck.length){endGame(s);return}
+  const next=s.players[s.currentTurn];s.log.push(`${next.isBot?'🤖':'👤'} ${next.name}'s turn!`);saveBotStep(s);
+}
+function saveBotStep(s){
+  localState=s;document.getElementById('botInd').style.display='none';
+  if(s.phase==='ended'){handleGameEnd(s);return}
+  renderGame(s);setTimeout(()=>maybeRunBot(),200);
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function chip(id){const b=BM[id]||{emoji:'?',bg:'#222',color:'#fff'};return`<div class="bc" style="background:${b.bg};border-color:${b.color}40" title="${b.name||id}">${b.emoji}</div>`}
+function renderGame(s){
+  const mi=s.players.findIndex(p=>p.id===myId),me=s.players[mi];if(!me)return;
+  const imt=s.currentTurn===mi,tp=s.turnPhase,tn=s.players[s.currentTurn];
+  document.getElementById('gTN').textContent=imt?'You':(tn?.name||'?');
+  document.getElementById('gMC').textContent=me.coins;
+  const ph=document.getElementById('gPh');
+  if(tp==='plant1'||tp==='plant2_optional'){ph.textContent='PLANT';ph.className='pp pp-plant'}
+  else if(tp==='trade'){ph.textContent='TRADE';ph.className='pp pp-trade'}
+  else{ph.textContent='DRAW';ph.className='pp pp-draw'}
+  const bi2=document.getElementById('botInd');
+  if(tn?.isBot){bi2.style.display='flex';document.getElementById('botIndName').textContent=tn.name}
+  else bi2.style.display='none';
+  for(let f=0;f<3;f++){
+    const fld=me.fields[f]||[];
+    if(f===2){document.getElementById('f2').style.display=me.thirdField?'block':'none';if(!me.thirdField)continue}
+    document.getElementById(`f${f}b`).innerHTML=fld.slice(0,12).map(b=>chip(b)).join('');
+    document.getElementById(`f${f}e`).style.display=fld.length?'none':'block';
+    if(fld.length&&fld[0]){const{coins}=bv(fld[0],fld.length);document.getElementById(`f${f}v`).textContent=coins>0?`🪙${coins}`:''}
+    else document.getElementById(`f${f}v`).textContent='';
+  }
+  document.getElementById('dkN').textContent=s.deck.length;
+  document.getElementById('dcN').textContent=s.discard.length;
+  document.getElementById('gLog').innerHTML=(s.log||[]).slice(-12).reverse().map(l=>`<div class="ll${l.startsWith('🤖')?' bot-line':''}">${l}</div>`).join('');
+  const tss=document.getElementById('trSlots');
+  const drawn=s.drawnCards||[],offers=s.tradeOffers||[];
+  if(!drawn.length&&!offers.length)tss.innerHTML='<div class="te">No cards yet.</div>';
+  else{let h='';if(drawn.length)h+=`<div class="tsl lit"><div class="tst">🃏 Drawn (${drawn.length})</div><div class="tsb">${drawn.map(b=>chip(b)).join('')}</div></div>`;
+    offers.forEach((o,i)=>{const op=s.players.find(p=>p.id===o.fromId);h+=`<div class="tsl"><div class="tst">💬 ${op?.name||'?'}</div><div class="tsb">${o.cards.map(b=>chip(b)).join('')}</div>${imt?`<button class="tac" onclick="acceptTrade(${i})">✓ Accept</button>`:''}</div>`});tss.innerHTML=h}
+  const hel=document.getElementById('myHand');hel.innerHTML='';
+  (me.hand||[]).forEach((id,i)=>{
+    const b=BM[id]||{emoji:'?',bg:'#222',color:'#aaa',name:'?'};
+    const t=b.bohno||[];const tip=t.map((v,n)=>v>0&&(n===0||t[n-1]!==v)?`${n}→🪙${v}`:null).filter(Boolean).join(' ');
+    const d=document.createElement('div');
+    d.className='hcard'+(i===selCard?' sel':'')+(i===0&&imt&&tp==='plant1'?' must':'');
+    d.style.background=b.bg;d.style.borderColor=b.color+'50';
+    d.title=`${b.name}: ${tip}`;
+    d.innerHTML=`<span style="font-size:1.15rem">${b.emoji}</span><div class="hcn">${b.name}</div>`;
+    d.onclick=()=>{if(tn?.isBot)return;selCard=selCard===i?-1:i;renderGame(s)};
+    hel.appendChild(d);
+  });
+  const op=document.getElementById('otherP');op.innerHTML='';
+  s.players.forEach((p,i)=>{if(p.id===myId)return;
+    const d=document.createElement('div'),isBot=p.isBot,isActive=s.currentTurn===i;
+    d.className='op'+(isActive?(isBot?' bot-active':' active'):'');
+    const fs=(p.fields||[[],[],[]]).map((f,fi)=>{if(fi===2&&!p.thirdField)return'';const b=f[0]?BM[f[0]]:null;return`<div class="opf">${b?b.emoji:'○'}<span>${f.length}</span></div>`}).join('');
+    d.innerHTML=`<div class="opr"><div class="opav">${isBot?BOT_AV[BOT_NAMES.indexOf(p.name)%BOT_AV.length]:AV[i]}</div><div class="opnm">${p.name}${isActive?' ⭐':''}</div><div class="ophc">🃏${(p.hand||[]).length}</div></div><div style="font-size:.68rem;color:var(--ac);margin-bottom:2px">🪙${p.coins}${isBot?' <span style="color:var(--pu);font-size:.58rem">BOT</span>':''}</div><div class="opfs">${fs}</div>`;
+    op.appendChild(d);
+  });
+  renderActs(s,imt,tp,tn);
+}
+
+function mkB(t,cls,fn,dis){const b=document.createElement('button');b.className='abtn '+cls;b.textContent=t;b.onclick=fn;if(dis)b.disabled=true;return b}
+function hint(bar,t){const s=document.createElement('span');s.className='ah';s.textContent=t;bar.appendChild(s)}
+function renderActs(s,imt,tp,tn){
+  const bar=document.getElementById('actBar');bar.innerHTML='';
+  if(tn?.isBot){hint(bar,`🤖 ${tn.name} thinking…`);return}
+  if(!imt){if(tp==='trade'&&selCard>=0)bar.appendChild(mkB('💬 Offer Card','ap',()=>offerTrade(s)));hint(bar,`Waiting for ${tn?.name}…`);return}
+  if(tp==='plant1'){bar.appendChild(mkB('🌱 Plant First','ag',()=>doPlant(s,0),selCard>0));hint(bar,'Must plant leftmost first.')}
+  else if(tp==='plant2_optional'){bar.appendChild(mkB('🌱 Plant Selected','ag',()=>doPlant(s,selCard),selCard<0));bar.appendChild(mkB('⏭️ Skip to Trade','ab2',()=>doAdvTrade(s)));hint(bar,'Optionally plant 2nd.')}
+  else if(tp==='trade'){bar.appendChild(mkB('✅ Done Trading','ab2',()=>doDoneTrade(s)));if(selCard>=0)bar.appendChild(mkB('💬 Offer','ap',()=>offerTrade(s)));hint(bar,'Trade drawn cards.')}
+  else if(tp==='draw'){bar.appendChild(mkB('🃏 Draw 3 Cards','ap',()=>doDraw(s)));hint(bar,'Draw to end turn.')}
+  bar.appendChild(mkB('🌾 Harvest','ar',()=>toast('Click a field to harvest! 🌾',2000)));
+}
+
+// ═══════════════════════════════════════════
+// PLAYER ACTIONS
+// ═══════════════════════════════════════════
+function getS(){return isBotGame?localState:null}
+async function freshS(){return isBotGame?localState:await loadRoom(roomId)}
+
+async function doPlant(s,ci){
+  const mi=s.players.findIndex(p=>p.id===myId),me=s.players[mi];
+  if(ci<0||ci>=me.hand.length){toast('Select a card!');return}
+  const id=me.hand[ci];let ok=false;
+  for(let f=0;f<(me.thirdField?3:2);f++)if(!me.fields[f].length||me.fields[f][0]===id){me.fields[f].push(id);me.hand.splice(ci,1);ok=true;break}
+  if(!ok){toast('No valid field — harvest one first!',2500);return}
+  s.log.push(`${me.name} planted ${BM[id]?.name}.`);selCard=-1;s.turnPhase='plant2_optional';
+  if(!s.deck.length){endGame(s);return}
+  commit(s);
+}
+async function doAdvTrade(s){
+  const me=s.players.find(p=>p.id===myId);
+  s.drawnCards=s.deck.splice(0,2);s.tradeOffers=[];s.turnPhase='trade';
+  s.log.push(`${me.name} drew ${s.drawnCards.length} for trading.`);commit(s);
+}
+async function doDoneTrade(s){
+  const mi=s.players.findIndex(p=>p.id===myId),me=s.players[mi];
+  (s.drawnCards||[]).forEach(id=>{let ok=false;for(let f=0;f<(me.thirdField?3:2);f++)if(!me.fields[f].length||me.fields[f][0]===id){me.fields[f].push(id);ok=true;break}if(!ok){s.discard.push(id);s.log.push(`${me.name} discarded ${BM[id]?.name}.`)}});
+  s.drawnCards=[];s.tradeOffers=[];s.turnPhase='draw';commit(s);
+}
+async function offerTrade(s){
+  const mi=s.players.findIndex(p=>p.id===myId),me=s.players[mi];
+  if(selCard<0){toast('Select a card!');return}
+  const id=me.hand[selCard];
+  s.tradeOffers=(s.tradeOffers||[]).filter(o=>o.fromId!==myId);
+  s.tradeOffers.push({fromId:myId,cards:[id]});
+  s.log.push(`${me.name} offered ${BM[id]?.name}.`);selCard=-1;commit(s);toast('Offer sent! 💬',1500);
+}
+async function acceptTrade(offerIdx){
+  const s=await freshS();
+  const mi=s.players.findIndex(p=>p.id===myId),me=s.players[mi];
+  const offer=(s.tradeOffers||[])[offerIdx];if(!offer){toast('Offer expired!');return}
+  const opi=s.players.findIndex(p=>p.id===offer.fromId),op=s.players[opi];
+  const drawn=s.drawnCards[0];if(!drawn){toast('No drawn cards!');return}
+  op.hand.push(drawn);s.drawnCards.splice(0,1);
+  offer.cards.forEach(id=>{const idx=op.hand.lastIndexOf(id);if(idx>=0)op.hand.splice(idx,1);let ok=false;for(let f=0;f<(me.thirdField?3:2);f++)if(!me.fields[f].length||me.fields[f][0]===id){me.fields[f].push(id);ok=true;break}if(!ok)s.discard.push(id)});
+  s.tradeOffers.splice(offerIdx,1);s.log.push(`${me.name} traded with ${op.name}! 🤝`);commit(s);toast('Trade accepted! 🤝',1500);
+}
+async function harvestField(fi){
+  const s=await freshS();
+  const mi=s.players.findIndex(p=>p.id===myId),me=s.players[mi];
+  const fld=me.fields[fi];if(!fld?.length){toast('Field is empty!');return}
+  const id=fld[0],{coins}=bv(id,fld.length);
+  me.coins+=coins;s.discard.push(...fld.slice(coins));me.fields[fi]=[];
+  s.log.push(`${me.name} harvested ${fld.length} ${BM[id]?.name} for 🪙${coins}.`);commit(s);toast(`Harvested 🪙${coins}!`,1500);
+}
+async function doDraw(s){
+  const mi=s.players.findIndex(p=>p.id===myId),me=s.players[mi];
+  const drawn=s.deck.splice(0,3);me.hand.push(...drawn);
+  s.log.push(`${me.name} drew ${drawn.length}. Turn ends.`);
+  s.currentTurn=(s.currentTurn+1)%s.players.length;s.turnPhase='plant1';s.drawnCards=[];s.tradeOffers=[];
+  if(!s.deck.length){endGame(s);return}
+  const next=s.players[s.currentTurn];s.log.push(`${next.isBot?'🤖':'👤'} ${next.name}'s turn!`);
+  selCard=-1;commit(s);
+}
+function endGame(s){
+  s.players.forEach(p=>{p.fields.forEach((f,fi)=>{if(!f.length)return;const{coins}=bv(f[0],f.length);p.coins+=coins;s.discard.push(...f.slice(coins));p.fields[fi]=[]})});
+  s.phase='ended';s.log.push('Game over!');commit(s);
+}
+function commit(s){
+  if(isBotGame){localState=s;if(s.phase==='ended'){handleGameEnd(s);return}renderGame(s);setTimeout(()=>maybeRunBot(),250)}
+  else{saveRoom(s);renderGame(s)}
+}
+
+// ═══════════════════════════════════════════
+// GAME END & SCORES
+// ═══════════════════════════════════════════
+async function handleGameEnd(s){
+  stopPoll();
+  // Save scores
+  const mode=isBotGame?'bot':'online';
+  await saveScores(s.players,mode);
+  showScreen('scoreboard');
+  renderScore(s);
+}
+
+function renderScore(s){
+  const sorted=[...s.players].sort((a,b)=>b.coins-a.coins);
+  const em=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣'],cl=['#f5d56e','#c0c0c0','#cd7f32','#6b7a99','#6b7a99','#6b7a99','#6b7a99'];
+  document.getElementById('sRows').innerHTML=sorted.map((p,i)=>`<div class="sr"><div class="srk" style="color:${cl[i]}">${em[i]}</div><div class="srn">${p.isBot?'🤖 ':''}${p.name}${p.id===myId?' (You)':''}</div><div class="src">🪙 ${p.coins}</div></div>`).join('');
+}
+
+// PLAY AGAIN — fully resets and starts fresh game
+function playAgain(){
+  // Reset all game state
+  selCard=-1;
+  if(botTimer)clearTimeout(botTimer);
+  stopPoll();
+  if(roomChannel){roomChannel.unsubscribe();roomChannel=null}
+
+  if(isBotGame&&lastBotSettings){
+    // Restart bot game with same settings
+    const{name,botCount:bc,botDiff:bd}=lastBotSettings;
+    botCount=bc;botDiff=bd;
+    document.getElementById('playerName').value=name;
+    startBotGame();
+  } else if(!isBotGame&&roomId){
+    // Online: go back to lobby to create/join fresh room
+    isBotGame=false;localState=null;roomId='';
+    showScreen('lobby');
+    toast('Create a new room to play again! 🌱',2500);
+  } else {
+    backToLobby();
+  }
+}
+
+function backToLobby(){
+  stopPoll();
+  if(roomChannel){roomChannel.unsubscribe();roomChannel=null}
+  if(botTimer)clearTimeout(botTimer);
+  // Full reset
+  isBotGame=false;localState=null;roomId='';selCard=-1;lastH='';
+  showScreen('lobby');
+}
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function toast(msg,ms=2000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&roomId&&!isBotGame)startPoll()});
+</script>
+</body>
+</html>
